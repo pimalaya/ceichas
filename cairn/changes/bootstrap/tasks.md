@@ -10,18 +10,18 @@ change: bootstrap
 
 ## M1: repository
 
-- [ ] Cargo.toml (`ceichas`, edition 2024, `MIT OR Apache-2.0`, rust-version as simd-cpu), LICENSE-MIT and LICENSE-APACHE, flake.nix, shell.nix (with the rust-std of the Windows, macOS, iOS, Android and FreeBSD targets for `cargo check --target`), default.nix, package.nix (`[ mit asl20 ]`), deny.toml, README, CHANGELOG, SECURITY.md, .gitignore, after simd-cpu
-- [ ] src/lib.rs header: the architecture, the guarantees, the backend table
+- [x] Cargo.toml (`ceichas`, edition 2024, `MIT OR Apache-2.0`, rust-version as simd-cpu), LICENSE-MIT and LICENSE-APACHE, flake.nix, shell.nix (with the rust-std of the Windows, macOS, iOS, Android and FreeBSD targets for `cargo check --target`), default.nix, package.nix (`[ mit asl20 ]`), deny.toml, README, CHANGELOG, SECURITY.md, .gitignore, after simd-cpu
+- [x] src/lib.rs header: the architecture, the guarantees, the backend table
 
 ## M2: interface and `Polling`
 
-- [ ] `CeichasTimer`, `CeichasTimerOptions`, `CeichasWait`, `CeichasWaker`, `CeichasError`, `CeichasBackend` (`default`, `available`)
-- [ ] `Polling`: condvar, one-second steps, the kept wake
-- [ ] tests/timer.rs: the delta's automatable scenarios, run against every backend `available()` lists, each wait behind a deadline
+- [x] `CeichasTimer`, `CeichasTimerOptions`, `CeichasWait`, `CeichasWaker`, `CeichasError`, `CeichasBackend` (`default`, `available`)
+- [x] `Polling`: condvar, one-second steps, the kept wake
+- [x] tests/timer.rs: the delta's automatable scenarios, run against every backend `available()` lists, each wait behind a deadline
 
 ## M3: `Timerfd` (Linux, Android)
 
-- [ ] rustix `timerfd` (`CLOCK_REALTIME`, `ABSTIME`), `eventfd`, `poll`, an interrupted `poll` going on
+- [x] rustix `timerfd` (`CLOCK_REALTIME`, `ABSTIME`), `eventfd`, `poll`, an interrupted `poll` going on
 
 ## M4: `WaitableTimer` (Windows)
 
@@ -34,8 +34,8 @@ change: bootstrap
 ## M6: clock and suspend checks
 
 - [ ] tests/clock.rs: clock set forward past a time and back before one, against every backend, ignored, refusing to run without `CEICHAS_CLOCK_TESTS=1`, the clock restored by a guard
-- [ ] examples/at.rs: waits until a UNIX time or an offset, prints when it answered
-- [ ] nix/vm-test.nix, the flake's `checks.x86_64-linux.vm`: the datetime, the clock set forward and back as root, a suspend over a time with a monotonic `sleep` as control, on every Linux backend
+- [x] examples/at.rs: waits until a UNIX time or an offset, prints when it answered
+- [x] nix/vm-test.nix, the flake's `checks.x86_64-linux.vm`: the datetime, the clock set forward and back as root, a suspend to RAM over a time with a monotonic `sleep` as control, on every Linux backend (passing locally, 2026-11-05)
 - [ ] Android: one Termux run of the Linux checks (user)
 
 ## M7: CI

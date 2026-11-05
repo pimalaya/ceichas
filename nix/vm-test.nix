@@ -20,19 +20,54 @@ let
     '';
   };
 
+  # NOTE: the check runs as a unit of its own and reports on the kernel log,
+  # so it does not depend on the backdoor shell across the suspends.
+  suspend = pkgs.writeShellScript "ceichas-suspend" ''
+    PATH=${
+      pkgs.lib.makeBinPath [
+        at
+        pkgs.coreutils
+        pkgs.util-linux
+      ]
+    }
+
+    for backend in "" polling; do
+      ceichas-at +10 $backend > /tmp/suspend 2>&1 &
+      waiting=$!
+      (sleep 10; date +%s%3N) > /tmp/control &
+      control=$!
+      start=$(date +%s%3N)
+      rtcwake -m mem -s 30 > /dev/null
+      resumed=$(date +%s%3N)
+      wait $waiting $control
+      echo "ceichas-suspend start=$start resumed=$resumed control=$(cat /tmp/control) $(cat /tmp/suspend)" > /dev/kmsg
+    done
+  '';
+
 in
 pkgs.testers.runNixOSTest {
   name = "ceichas";
+
+  # NOTE: a guest that never answers fails the test instead of hanging it.
+  globalTimeout = 900;
 
   nodes.machine = {
     environment.systemPackages = [ at ];
 
     # NOTE: the test sets the clock by hand, nothing may set it back.
     services.timesyncd.enable = false;
+
+    # NOTE: suspend to RAM, which QEMU wakes on the RTC alarm; the guest does
+    # not wake from suspend to idle. The store sits on a disk image, since
+    # the 9p share of the host's store does not survive a suspend.
+    boot.kernelParams = [ "mem_sleep_default=deep" ];
+    virtualisation.qemu.options = [ "-global PIIX4_PM.disable_s3=0" ];
+    virtualisation.useNixStoreImage = true;
   };
 
   testScript = ''
     import re
+    import time
 
     BACKENDS = ["", "polling"]
 
@@ -89,18 +124,26 @@ pkgs.testers.runNixOSTest {
             assert answered - moved <= 1000, f"{name} answered {answered - moved} ms after the clock moved"
 
     with subtest("suspended time counts"):
-        for backend in BACKENDS:
-            machine.succeed(f"ceichas-at +10 {backend} > /tmp/suspend 2>&1 &")
-            machine.succeed("(sleep 10; date +%s%3N) > /tmp/control 2>&1 &")
-            start = now_ms()
-            machine.succeed("rtcwake -m freeze -s 30")
-            resumed = now_ms()
-            machine.wait_until_succeeds("grep -q Reached /tmp/suspend", timeout=10)
-            wait, name, answered, _, wall, mono = answer(machine.succeed("cat /tmp/suspend"))
+        modes = machine.succeed("cat /sys/power/mem_sleep")
+        assert "[deep]" in modes, f"no suspend to RAM: {modes!r}"
+
+        machine.succeed("systemd-run --unit=ceichas-suspend ${suspend}")
+
+        # NOTE: `wait_for_console_text` reads one console line per second,
+        # far behind the suspend logs, so the full log is polled instead.
+        report = r"ceichas-suspend start=(\d+) resumed=(\d+) control=(\d+) (.*mono_ms=\d+)"
+        deadline = time.monotonic() + 180
+
+        while len(reports := list(re.finditer(report, machine.get_console_log()))) < len(BACKENDS):
+            assert time.monotonic() < deadline, f"{len(reports)} reports for {len(BACKENDS)} backends"
+            time.sleep(1)
+
+        for found in reports:
+            start, resumed, control = map(int, found.groups()[:3])
+            wait, name, answered, _, wall, mono = answer(found.group(4))
+            assert wait == "Reached", f"{name} answered {wait}"
             assert wall - mono >= 20000, f"the suspend left the monotonic clock running: wall {wall} ms, monotonic {mono} ms"
             assert answered - resumed <= 1000, f"{name} answered {answered - resumed} ms after the resume"
-            machine.wait_until_succeeds("test -s /tmp/control", timeout=30)
-            control = int(machine.succeed("cat /tmp/control"))
             late = control - start - 10000
             assert late >= 15000, f"the monotonic sleep ended {late} ms late only"
   '';
