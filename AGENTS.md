@@ -42,6 +42,6 @@ Check the structure yourself against the strict rules (CAIRN.md §8): a discover
 - No em dashes in prose, per the Pimalaya guidelines.
 - Public items carry the `Ceichas` domain prefix.
 - Every `unsafe` block lives in an OS backend module and carries a `// SAFETY:` comment naming the contract it relies on.
-- A behaviour claimed for an OS (suspend counted, clock change followed) is checked on that OS before the spec states it, in CI wherever a runner can, by hand otherwise; the check table lives in cairn/spec/timer.md once landed.
+- A behaviour claimed for an OS (suspend counted, clock change followed) is checked on that OS, in CI wherever a runner can, by hand otherwise; until then the check table in cairn/spec/timer.md marks it expected, from the OS source alone.
 - Tests that set the system clock run only in CI or a VM, never on a workstation: they are ignored by default and refuse to run without `CEICHAS_CLOCK_TESTS=1`.
 - A user-facing change also lands in CHANGELOG.md, which is a release-scoped roll-up over the Cairn log, not a replacement for it.

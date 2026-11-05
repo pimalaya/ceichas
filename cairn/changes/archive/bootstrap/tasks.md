@@ -45,6 +45,6 @@ change: bootstrap
 
 ## M8: land
 
-- [ ] Fold the delta into spec/timer.md with the check table, log entry, CHANGELOG
+- [x] Fold the delta into spec/timer.md with the check table, log entry, CHANGELOG (its Unreleased entries already matching)
 - [ ] Release (user)
 - [x] carillon: the alarm wait swapped to ceichas (carillon change alarm-hooks, last milestone): carillon f8bfed9, git-pinned to 661be05
