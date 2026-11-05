@@ -1,0 +1,24 @@
+[package]
+name = "ceichas"
+description = "Wait until a wall-clock time, counting suspended time and following clock changes"
+version = "0.1.0"
+authors = ["Clément DOUIN (soywod) <pimalaya.org@posteo.net>"]
+rust-version = "1.85"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+categories = ["date-and-time", "os"]
+keywords = ["timer", "wall-clock", "suspend", "alarm", "timerfd"]
+homepage = "https://pimalaya.org"
+documentation = "https://docs.rs/ceichas/latest/ceichas"
+repository = "https://github.com/pimalaya/ceichas"
+exclude = ["/cairn", "/nix"]
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "aarch64-apple-darwin"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[target.'cfg(any(target_os = "linux", target_os = "android"))'.dependencies]
+rustix = { version = "1", features = ["event", "time"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_Threading"] }

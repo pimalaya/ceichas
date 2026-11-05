@@ -1,0 +1,98 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: fmt + clippy + test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - if: runner.os == 'Linux'
+        run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test
+
+  msrv:
+    name: build (MSRV)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --all-targets
+
+  cross:
+    name: clippy (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [aarch64-linux-android, aarch64-apple-ios, x86_64-unknown-freebsd]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets --target ${{ matrix.target }} -- -D warnings
+
+  # NOTE: these tests set the system clock, which only throwaway runners may
+  # do; time synchronisation stops first so it cannot move the clock back.
+  clock:
+    name: clock changes (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Stop time synchronisation
+        if: runner.os == 'Linux'
+        run: |
+          sudo timedatectl set-ntp false || true
+          sudo systemctl stop chrony systemd-timesyncd 2>/dev/null || true
+      - name: Stop time synchronisation
+        if: runner.os == 'macOS'
+        run: sudo systemsetup -setusingnetworktime off || true
+      - name: Stop time synchronisation
+        if: runner.os == 'Windows'
+        run: Stop-Service w32time -Force -ErrorAction SilentlyContinue
+      - run: cargo test --test clock -- --ignored --test-threads=1
+        env:
+          CEICHAS_CLOCK_TESTS: "1"
+
+  nixos:
+    name: NixOS VM (datetime, clock changes, suspend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            system-features = nixos-test benchmark big-parallel kvm
+      - uses: cachix/cachix-action@v17
+        with:
+          name: soywod
+          extraPullNames: nix-community
+      - run: nix build -L .#checks.x86_64-linux.vm
