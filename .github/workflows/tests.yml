@@ -71,7 +71,10 @@ jobs:
         run: sudo systemsetup -setusingnetworktime off || true
       - name: Stop time synchronisation
         if: runner.os == 'Windows'
-        run: Stop-Service w32time -Force -ErrorAction SilentlyContinue
+        run: |
+          Get-Service w32time, vmictimesync -ErrorAction SilentlyContinue | Format-Table Name, Status
+          Stop-Service w32time, vmictimesync -Force -ErrorAction SilentlyContinue
+          Get-Service w32time, vmictimesync -ErrorAction SilentlyContinue | Format-Table Name, Status
       - run: cargo test --test clock -- --ignored --test-threads=1
         env:
           CEICHAS_CLOCK_TESTS: "1"

@@ -58,7 +58,12 @@ fn clock_set_back_keeps_wait_going() {
         clock.set(clock.untouched() - Duration::from_secs(60));
 
         thread::sleep(Duration::from_secs(8));
-        assert!(answer.try_recv().is_err(), "{backend:?} kept the old clock");
+
+        assert!(
+            answer.try_recv().is_err(),
+            "{backend:?} kept the old clock, the clock reading {} from untouched",
+            clock.offset(),
+        );
 
         clock.set(clock.untouched());
 
@@ -104,6 +109,14 @@ impl Clock {
     /// What the clock would read had no test set it.
     fn untouched(&self) -> SystemTime {
         self.wall + self.mono.elapsed()
+    }
+
+    /// How far the clock reads from untouched, for failure messages.
+    fn offset(&self) -> String {
+        match SystemTime::now().duration_since(self.untouched()) {
+            Ok(ahead) => format!("{:+.1} s", ahead.as_secs_f64()),
+            Err(err) => format!("{:+.1} s", -err.duration().as_secs_f64()),
+        }
     }
 
     fn set(&self, time: SystemTime) {
