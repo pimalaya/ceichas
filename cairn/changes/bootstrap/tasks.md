@@ -25,26 +25,26 @@ change: bootstrap
 
 ## M4: `WaitableTimer` (Windows)
 
-- [ ] windows-sys waitable timer (absolute UTC `FILETIME` due time, `fResume` false), auto-reset event, `WaitForMultipleObjects`
+- [x] windows-sys waitable timer (absolute UTC `FILETIME` due time, `fResume` false), auto-reset event, `WaitForMultipleObjects`; suite and clock changes green on the windows-latest runner (241848e)
 
 ## M5: `Dispatch` (macOS)
 
-- [ ] libdispatch FFI: source timer at `dispatch_walltime` with `DISPATCH_TIMER_STRICT`, a semaphore for both signals, the source's own semaphore reference released by its cancel handler, the source cancelled and released on drop
+- [x] libdispatch FFI: source timer at `dispatch_walltime` with `DISPATCH_TIMER_STRICT`, a semaphore for both signals, the source's own semaphore reference released by its cancel handler, the source cancelled and released on drop; suite and clock changes green on the macos-latest runner (241848e)
 
 ## M6: clock and suspend checks
 
-- [ ] tests/clock.rs: clock set forward past a time and back before one, against every backend, ignored, refusing to run without `CEICHAS_CLOCK_TESTS=1`, the clock restored by a guard
+- [x] tests/clock.rs: clock set forward past a time and back before one, against every backend, ignored, refusing to run without `CEICHAS_CLOCK_TESTS=1`, the clock restored by a guard; green on the three runners (241848e), the Windows job stopping `vmictimesync` as well as `w32time`, since the Hyper-V time sync put the clock back
 - [x] examples/at.rs: waits until a UNIX time or an offset, prints when it answered
-- [x] nix/vm-test.nix, the flake's `checks.x86_64-linux.vm`: the datetime, the clock set forward and back as root, a suspend to RAM over a time with a monotonic `sleep` as control, on every Linux backend (passing locally, 2026-11-05)
+- [x] nix/vm-test.nix, the flake's `checks.x86_64-linux.vm`: the datetime, the clock set forward and back as root, a suspend to RAM over a time with a monotonic `sleep` as control, on every Linux backend (passing locally and in CI, 2026-11-05)
 - [ ] Android: one Termux run of the Linux checks (user)
 
 ## M7: CI
 
-- [ ] tests.yml: fmt, clippy and tests on Linux, macOS and Windows; the MSRV build; `cargo clippy --target` for Android, iOS and FreeBSD; the clock job on the three runners; the NixOS VM job with KVM
-- [ ] audit.yml (cargo-deny), after simd-cpu
+- [x] tests.yml: fmt, clippy and tests on Linux, macOS and Windows; the MSRV build; `cargo clippy --target` for Android, iOS and FreeBSD; the clock job on the three runners; the NixOS VM job with KVM; all green on 241848e
+- [x] audit.yml (cargo-deny), after simd-cpu; green on 241848e
 
 ## M8: land
 
 - [ ] Fold the delta into spec/timer.md with the check table, log entry, CHANGELOG
 - [ ] Release (user)
-- [ ] carillon: the alarm wait swapped to ceichas (carillon change alarm-hooks, last milestone)
+- [x] carillon: the alarm wait swapped to ceichas (carillon change alarm-hooks, last milestone): carillon f8bfed9, git-pinned to 661be05
