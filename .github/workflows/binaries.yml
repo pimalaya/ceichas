@@ -1,0 +1,38 @@
+name: Binaries
+
+on:
+  push:
+  pull_request:
+
+# NOTE: builds the ceichas CLI for hand checks on machines without a Rust
+# toolchain, kept as workflow artifacts; no release is published.
+jobs:
+  build:
+    name: ceichas (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release --features cli --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ceichas-${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/release/ceichas
+            target/${{ matrix.target }}/release/ceichas.exe
+          if-no-files-found: error

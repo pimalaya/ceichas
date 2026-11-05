@@ -26,6 +26,16 @@ Wait until a wall-clock time, counting suspended time and following clock change
 
 The whole API is documented on [docs.rs](https://docs.rs/ceichas/latest/ceichas), with a runnable snippet at the crate root.
 
+The `cli` feature builds a `ceichas` binary, a `sleep` until a wall-clock time:
+
+```sh
+cargo install --git https://github.com/pimalaya/ceichas --features cli
+ceichas 2026-11-06T08:45:00+01:00 && mpv alarm.ogg
+ceichas --verbose +1h30m
+```
+
+It takes an RFC 3339 datetime, `+` and a duration in `s`, `m`, `h` and `d`, or a UNIX time, exits 0 once the time is reached and 1 on an error. The Binaries workflow builds it for Linux, macOS and Windows as workflow artifacts.
+
 ## Examples
 
 [examples/at.rs](examples/at.rs) waits until a UNIX time, or a number of seconds from now, then prints how the wait ended and when. The NixOS VM test of [nix/vm-test.nix](nix/vm-test.nix) runs it around clock changes and suspends, and [tests/timer.rs](tests/timer.rs) runs the timer suite against every backend.

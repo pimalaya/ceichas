@@ -13,6 +13,15 @@ documentation = "https://docs.rs/ceichas/latest/ceichas"
 repository = "https://github.com/pimalaya/ceichas"
 exclude = ["/cairn", "/nix"]
 
+[features]
+# The ceichas binary, a sleep until a wall-clock time.
+cli = []
+
+[[bin]]
+name = "ceichas"
+path = "src/main.rs"
+required-features = ["cli"]
+
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "aarch64-apple-darwin"]
 rustdoc-args = ["--cfg", "docsrs"]

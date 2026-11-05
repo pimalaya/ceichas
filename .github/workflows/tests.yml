@@ -20,8 +20,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - if: runner.os == 'Linux'
         run: cargo fmt --all --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test
+      - run: cargo clippy --all-targets --all-features -- -D warnings
+      - run: cargo test --all-features
 
   msrv:
     name: build (MSRV)
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.85
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build --all-targets
+      - run: cargo build --all-targets --all-features
 
   cross:
     name: clippy (${{ matrix.target }})
@@ -46,7 +46,7 @@ jobs:
           targets: ${{ matrix.target }}
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --all-targets --target ${{ matrix.target }} -- -D warnings
+      - run: cargo clippy --all-targets --all-features --target ${{ matrix.target }} -- -D warnings
 
   # NOTE: these tests set the system clock, which only throwaway runners may
   # do; time synchronisation stops first so it cannot move the clock back.

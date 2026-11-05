@@ -17,5 +17,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added `CeichasWaker`, ending the current or the next wait of its timer from any thread.
 - Added `CeichasBackend`: `Timerfd` on Linux and Android, `WaitableTimer` on Windows, `Dispatch` on macOS, `Polling` everywhere.
 - Added `CeichasError`, naming the OS call that failed.
+- Added the `ceichas` binary behind the `cli` feature, waiting until an RFC 3339 datetime, a duration from now or a UNIX time, then exiting 0; `--verbose` prints how the wait ended.
 
 [Unreleased]: https://github.com/pimalaya/ceichas/compare/root..HEAD
