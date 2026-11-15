@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-15
+
 ### Added
 
 - Added `CeichasTimer`, one OS timer waiting until a wall-clock time.
@@ -19,4 +21,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added `CeichasError`, naming the OS call that failed.
 - Added the `ceichas` binary behind the `cli` feature, waiting until an RFC 3339 datetime, a duration from now or a UNIX time, then exiting 0; `--verbose` prints how the wait ended.
 
-[Unreleased]: https://github.com/pimalaya/ceichas/compare/root..HEAD
+[Unreleased]: https://github.com/pimalaya/ceichas/compare/v0.1.0..HEAD
+[0.1.0]: https://github.com/pimalaya/ceichas/compare/root..v0.1.0
